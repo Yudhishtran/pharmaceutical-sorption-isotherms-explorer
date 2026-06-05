@@ -1,0 +1,6 @@
+{
+  "name": "Pharmaceutical Sorption Isotherms Explorer",
+  "description": "Interactive explorer and dynamic predictor for moisture sorption isotherms of key pharmaceutical excipients (0% to 95% RH, 8°C to 40°C) with GAB modeling and Gemini AI analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
