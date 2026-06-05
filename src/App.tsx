@@ -277,7 +277,7 @@ export default function App() {
         setSelectedTemps(selectedTemps.filter(x => x !== t));
       }
     } else {
-      setSelectedTemps([...selectedTemps].sort((a,b) => a - b));
+      setSelectedTemps([...selectedTemps, t].sort((a,b) => a - b));
     }
   };
 
