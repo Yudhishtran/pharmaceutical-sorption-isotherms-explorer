@@ -203,6 +203,9 @@ export default function App() {
   const [showSensitivity, setShowSensitivity] = useState<boolean>(false);
   const [showTrendLines, setShowTrendLines] = useState<boolean>(false);
 
+  // API Key state
+  const [geminiApiKey, setGeminiApiKey] = useState('');
+
   // Custom Materials Predicitions
   const [customNameInput, setCustomNameInput] = useState('');
   const [customStructureInput, setCustomStructureInput] = useState('');
@@ -269,14 +272,14 @@ export default function App() {
 
   // Handle Temp Toggle
   const toggleTemp = (t: number) => {
-    if (selectedTemps.includes(t)) {
-      if (selectedTemps.length > 1) {
-        setSelectedTemps(selectedTemps.filter(x => x !== t));
-      }
-    } else {
-      setSelectedTemps([...selectedTemps].sort((a,b) => a - b));
+  if (selectedTemps.includes(t)) {
+    if (selectedTemps.length > 1) {
+      setSelectedTemps(selectedTemps.filter(x => x !== t));
     }
-  };
+  } else {
+    setSelectedTemps([...selectedTemps, t].sort((a, b) => a - b));
+  }
+};
 
   // Select all available temperatures
   const selectAllTemps = () => {
@@ -303,10 +306,10 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           excipientName: nameToPredict,
-          chemicalStructure: directName ? "" : customStructureInput
-        }),
-      });
-
+          chemicalStructure: directName ? "" : customStructureInput,
+          apiKey: geminiApiKey
+}),
+});
       if (!res.ok) {
         throw new Error(await res.text() || "Failed to predict excipient isotherms");
       }
@@ -376,7 +379,10 @@ export default function App() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: conversationHistory })
+        body: JSON.stringify({ 
+          messages: conversationHistory,
+          apiKey: geminiApiKey
+        })
       });
 
       if (!response.ok) {
@@ -3215,7 +3221,18 @@ export default function App() {
             <p className="text-xs text-slate-400">
               Query our scientific companion for formulation design recommendation, moisture-induced polymorphism, and dynamic packaging insights.
             </p>
-
+            <div className="space-y-1">
+              <label className="text-xs text-slate-400 font-medium">
+                Gemini API Key (Demo Mode)
+              </label>
+              <input
+                type="password"
+                value={geminiApiKey}
+                onChange={(e) => setGeminiApiKey(e.target.value)}
+                placeholder="Paste Gemini API Key"
+                className="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 text-slate-100 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-sky-500/50 transition-all"
+              />
+            </div>
             {/* Suggested quick items */}
             <div className="flex flex-wrap gap-2 pt-1">
               {quickQuestions.map((qq, qi) => (

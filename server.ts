@@ -20,26 +20,28 @@ app.use(express.json());
 // Lazy-loaded Gemini AI client to ensure zero startup crashes when API keys are unconfigured
 let aiClientInstance: GoogleGenAI | null = null;
 
-function getGeminiClient(): GoogleGenAI {
-  if (aiClientInstance) {
-    return aiClientInstance;
+function getGeminiClient(apiKeyFromRequest?: string): GoogleGenAI {
+  const effectiveApiKey =
+    apiKeyFromRequest?.trim() ||
+    process.env.GEMINI_API_KEY;
+
+  if (
+    !effectiveApiKey ||
+    effectiveApiKey === "MY_GEMINI_API_KEY"
+  ) {
+    throw new Error(
+      "Gemini API Key not provided. Please enter a valid Gemini API key."
+    );
   }
-  
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey.trim() === "") {
-    throw new Error("GEMINI_API_KEY is not configured in your environment secrets. Please configure it in Settings > Secrets.");
-  }
-  
-  aiClientInstance = new GoogleGenAI({
-    apiKey: apiKey,
+
+  return new GoogleGenAI({
+    apiKey: effectiveApiKey,
     httpOptions: {
       headers: {
         'User-Agent': 'aistudio-build',
       },
     },
   });
-  
-  return aiClientInstance;
 }
 
 // 1. Health check endpoint
@@ -50,13 +52,13 @@ app.get('/api/health', (req, res) => {
 // 2. Chat/Advisor Endpoint: Expert guidance on materials science, water activity & formulations
 app.post('/api/chat', async (req, res) => {
   try {
-    const { messages } = req.body;
+    const { messages, apiKey } = req.body;
     if (!messages || !Array.isArray(messages)) {
       res.status(400).json({ error: 'Invalid or missing messages array.' });
       return;
     }
     
-    const ai = getGeminiClient();
+    const ai = getGeminiClient(apiKey);
     
     // Format conversation history
     const systemPrompt = `You are an expert material scientist and pharmaceutical development scientist. 
@@ -95,13 +97,13 @@ Keep responses well-structured with bullet points or bold tags where necessary. 
 // 3. AI Predictive Isotherm Extender: Fit GAB constants & literature benchmarks for arbitrary materials
 app.post('/api/predict', async (req, res) => {
   try {
-    const { excipientName, chemicalStructure } = req.body;
+    const { excipientName, chemicalStructure, apiKey} = req.body;
     if (!excipientName || typeof excipientName !== 'string' || excipientName.trim() === '') {
       res.status(400).json({ error: 'Excipient name is required.' });
       return;
     }
     
-    const ai = getGeminiClient();
+    const ai = getGeminiClient(apiKey);
     
     const predictionPrompt = `Analyze the pharmaceutical excipient/material named: "${excipientName}" ${
       chemicalStructure ? `with chemical formula/structure details: "${chemicalStructure}"` : ""
