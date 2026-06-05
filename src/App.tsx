@@ -272,14 +272,14 @@ export default function App() {
 
   // Handle Temp Toggle
   const toggleTemp = (t: number) => {
-  if (selectedTemps.includes(t)) {
-    if (selectedTemps.length > 1) {
-      setSelectedTemps(selectedTemps.filter(x => x !== t));
+    if (selectedTemps.includes(t)) {
+      if (selectedTemps.length > 1) {
+        setSelectedTemps(selectedTemps.filter(x => x !== t));
+      }
+    } else {
+      setSelectedTemps([...selectedTemps].sort((a,b) => a - b));
     }
-  } else {
-    setSelectedTemps([...selectedTemps, t].sort((a, b) => a - b));
-  }
-};
+  };
 
   // Select all available temperatures
   const selectAllTemps = () => {
